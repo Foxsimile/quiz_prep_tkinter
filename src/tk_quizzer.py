@@ -44,7 +44,7 @@ class MCQuestionDisplay:
         self.question_label = None
         self.question_canvas = None
         self.question_width_percent = 0.666
-        self.multichoice_radiobutton_label_pairs = []
+        self.multichoice_radiobutton_groups = []
         self.multichoice_intvar = tk.IntVar()
         self.multichoice_width_percent = 0.8
         self.master_creation_overseer()
@@ -130,7 +130,7 @@ class MCQuestionDisplay:
             radiobutton_x = self.create_radiobutton(radiobutton_innerframe_x, (string.ascii_uppercase[x - 1] + ' : '), intvar, x)
             #radiobutton_label_x = self.create_choice_label(radiobutton_innerframe_x, self.question_dict[string.ascii_uppercase[x - 1]], (x - 1), self.resize_mc_radiobutton_label_wraplength)
             radiobutton_label_x = self.create_choice_label(radiobutton_innerframe_x, self.question_dict['Q'], (x - 1), radiobutton_x, self.resize_mc_radiobutton_label_wraplength, self.factory_raise_event_on_alt_widget)
-            self.multichoice_radiobutton_label_pairs.append((radiobutton_x, radiobutton_label_x, radiobutton_innerframe_x, radiobutton_innercanvas_x))
+            self.multichoice_radiobutton_groups.append((radiobutton_x, radiobutton_label_x, radiobutton_innerframe_x, radiobutton_innercanvas_x))
     
 
     def create_mc_radiobutton_frame(self, frame):
@@ -161,7 +161,13 @@ class MCQuestionDisplay:
     def create_mc_radiobutton_innercanvas(self, frame, row_val):
         mc_radiobutton_innercanvas = tk.Canvas(frame, height=0)
         mc_radiobutton_innercanvas.grid(column=0, row=row_val, columnspan=2, sticky=tk.NSEW)
+        self.add_func_to_mcquestion_resize_list(mc_radiobutton_innercanvas, self.resize_mc_radiobutton_innercanvas)
         return mc_radiobutton_innercanvas
+
+    
+    def resize_mc_radiobutton_innercanvas(self, widget):
+        new_width = int(self.master_w_intvar.get() * self.multichoice_width_percent)
+        widget.configure(width=new_width)
 
     
     def create_radiobutton(self, frame, text_string, control_var, int_val):
@@ -193,7 +199,7 @@ class MCQuestionDisplay:
 
     def resize_mc_radiobutton_label_wraplength(self, widget):
         new_width = int(self.master_w_intvar.get() * self.multichoice_width_percent)
-        widget.configure(wraplength=new_width)    
+        widget.configure(wraplength=new_width)
 
     
     def factory_raise_event_on_alt_widget(self, widget, event_string):
