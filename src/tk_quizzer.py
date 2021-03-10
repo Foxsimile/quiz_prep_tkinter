@@ -126,10 +126,11 @@ class MCQuestionDisplay:
         self.mc_radiobutton_canvas = self.create_mc_radiobutton_canvas(self.mc_radiobutton_frame, (w_intvar.get() * self.multichoice_width_percent), self.resize_mc_radiobutton_canvas)
         for x in range(1, 5):
             radiobutton_innerframe_x = self.create_mc_radiobutton_innerframe(self.mc_radiobutton_frame, (x - 1))
+            radiobutton_innercanvas_x = self.create_mc_radiobutton_innercanvas(radiobutton_innerframe_x, (x - 1))
             radiobutton_x = self.create_radiobutton(radiobutton_innerframe_x, (string.ascii_uppercase[x - 1] + ' : '), intvar, x)
             #radiobutton_label_x = self.create_choice_label(radiobutton_innerframe_x, self.question_dict[string.ascii_uppercase[x - 1]], (x - 1), self.resize_mc_radiobutton_label_wraplength)
-            radiobutton_label_x = self.create_choice_label(radiobutton_innerframe_x, self.question_dict['Q'], (x - 1), self.resize_mc_radiobutton_label_wraplength)
-            self.multichoice_radiobutton_label_pairs.append((radiobutton_x, radiobutton_label_x, radiobutton_innerframe_x))
+            radiobutton_label_x = self.create_choice_label(radiobutton_innerframe_x, self.question_dict['Q'], (x - 1), radiobutton_x, self.resize_mc_radiobutton_label_wraplength, self.factory_raise_event_on_alt_widget)
+            self.multichoice_radiobutton_label_pairs.append((radiobutton_x, radiobutton_label_x, radiobutton_innerframe_x, radiobutton_innercanvas_x))
     
 
     def create_mc_radiobutton_frame(self, frame):
@@ -139,7 +140,7 @@ class MCQuestionDisplay:
 
 
     def create_mc_radiobutton_canvas(self, frame, w, resize_func):
-        mc_radiobutton_canvas = tk.Canvas(frame, width=w, height=0)
+        mc_radiobutton_canvas = tk.Canvas(frame, width=w, height=0, bg='white')
         mc_radiobutton_canvas.grid(column=0, row=0, columnspan=2, sticky=tk.NSEW)
         mc_radiobutton_canvas.grid_propagate(0)
         self.add_func_to_mcquestion_resize_list(mc_radiobutton_canvas, resize_func)
@@ -152,9 +153,15 @@ class MCQuestionDisplay:
 
     
     def create_mc_radiobutton_innerframe(self, frame, row_val):
-        mc_radiobutton_innerframe = tk.Frame(frame, borderwidth=1, relief=tk.RAISED)
+        mc_radiobutton_innerframe = tk.Frame(frame, borderwidth=2, bg='black', relief=tk.FLAT)
         mc_radiobutton_innerframe.grid(column=0, row=row_val, pady=2, sticky=tk.EW)
         return mc_radiobutton_innerframe
+
+    
+    def create_mc_radiobutton_innercanvas(self, frame, row_val):
+        mc_radiobutton_innercanvas = tk.Canvas(frame, height=0)
+        mc_radiobutton_innercanvas.grid(column=0, row=row_val, columnspan=2, sticky=tk.NSEW)
+        return mc_radiobutton_innercanvas
 
     
     def create_radiobutton(self, frame, text_string, control_var, int_val):
@@ -169,13 +176,17 @@ class MCQuestionDisplay:
             if control_var.get() == int(widget.cget('value')):
                 control_var.set(0)
                 return "break"
+            else:
+                control_var.set(int(widget.cget('value')))
+                return "break"
         return deselect_radiobutton
 
     
-    def create_choice_label(self, frame, choice_text, row_val, resize_func):
+    def create_choice_label(self, frame, choice_text, row_val, partner_radiobutton, resize_func, bind_func):
         choice_label = tk.Label(frame, justify=tk.LEFT, wraplength=400, text=choice_text)
         choice_label.grid(column=1, row=row_val, sticky=tk.W)
         self.add_func_to_mcquestion_resize_list(choice_label, resize_func)
+        choice_label.bind('<ButtonRelease>', bind_func(partner_radiobutton, '<ButtonRelease>'))
         frame.columnconfigure(1, weight=1)
         return choice_label
 
@@ -183,6 +194,12 @@ class MCQuestionDisplay:
     def resize_mc_radiobutton_label_wraplength(self, widget):
         new_width = int(self.master_w_intvar.get() * self.multichoice_width_percent)
         widget.configure(wraplength=new_width)    
+
+    
+    def factory_raise_event_on_alt_widget(self, widget, event_string):
+        def raised_event_by_alt_widget_handler(event):
+            widget.event_generate(event_string)
+        return raised_event_by_alt_widget_handler
 
 
 if __name__ == "__main__":
